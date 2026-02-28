@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOTC Town Square</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="display.css">
+</head>
+<body>
+  <div id="header">
+    <span id="session-title"></span>
+    <span id="phase-banner"></span>
+    <button id="fullscreen-btn" title="Enter fullscreen">&#9974;</button>
+  </div>
+
+  <div id="block-strip" class="hidden">
+    <span id="block-name"></span>
+    <span id="block-votes-info"></span>
+  </div>
+
+  <div id="circle-container">
+    <div id="circle"></div>
+  </div>
+
+  <div id="qr-overlay" class="hidden">
+    <div id="qr-label">ST Console</div>
+    <img id="qr-img" alt="ST Console QR Code">
+  </div>
+
+  <script src="display.js"></script>
+</body>
+</html>

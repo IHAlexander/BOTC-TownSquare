@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#0d0d1a">
+  <title>ST Console — BOTC</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="storyteller.css">
+</head>
+<body>
+  <!-- Header -->
+  <header id="header">
+    <div id="header-left">
+      <span id="phase-indicator"></span>
+    </div>
+    <button id="undo-btn" disabled title="Undo last action">↩ Undo</button>
+  </header>
+
+  <!-- Controls bar -->
+  <div id="controls-bar">
+    <input id="title-input" type="text" maxlength="60" placeholder="Session title…" autocomplete="off" spellcheck="false">
+    <button id="phase-btn"></button>
+  </div>
+
+  <!-- Seat count -->
+  <div id="seat-count-bar">
+    <span class="sc-label">Players</span>
+    <button id="sc-dec" class="sc-btn">◀</button>
+    <span id="sc-value">10</span>
+    <button id="sc-inc" class="sc-btn">▶</button>
+    <span id="majority-info"></span>
+  </div>
+
+  <!-- Player list -->
+  <ul id="player-list"></ul>
+
+  <!-- Footer -->
+  <div id="footer">
+    <details id="log-details">
+      <summary>Game Log</summary>
+      <ul id="log-list"></ul>
+    </details>
+    <button id="reset-btn">Reset Game</button>
+  </div>
+
+  <!-- Sortable from CDN — needed for drag-to-reorder -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+  <script src="storyteller.js"></script>
+</body>
+</html>
