@@ -11,6 +11,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.1.2] - 2026-02-28
+
+### Fixed
+- Executed player state incorrectly set to `dead_no_vote`; BOTC rules grant executed players their ghost vote, so state is now `dead_vote`
+
+---
+
 ## [1.1.1] - 2026-02-28
 
 ### Fixed
