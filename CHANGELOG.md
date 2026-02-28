@@ -11,6 +11,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.1.1] - 2026-02-28
+
+### Fixed
+- Majority vote calculation used `floor(n/2)+1` giving 5 for 8 alive players; correct formula is `ceil(n/2)` giving 4
+
+---
+
 ## [1.1.0] - 2026-02-28
 
 ### Fixed

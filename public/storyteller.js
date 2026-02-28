@@ -223,7 +223,7 @@
     // Majority
     const alive = gs.seats.filter(s => s.name && s.state === 'alive').length;
     const named = gs.seats.filter(s => s.name).length;
-    const needed = alive > 0 ? Math.floor(alive / 2) + 1 : 0;
+    const needed = alive > 0 ? Math.ceil(alive / 2) : 0;
     majorityInfo.textContent = `${alive} alive · ${needed} to execute`;
 
     // Reconcile player rows
