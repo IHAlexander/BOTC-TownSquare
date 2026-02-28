@@ -4,7 +4,6 @@
   let state = null;
   let ws = null;
   let sortable = null;
-  let reorderPending = false;
 
   // ── WebSocket ──────────────────────────────────────────────
   function connect() {
@@ -16,7 +15,7 @@
 
     ws.onmessage = e => {
       const msg = JSON.parse(e.data);
-      if (msg.type === 'STATE' && !reorderPending) {
+      if (msg.type === 'STATE') {
         state = msg.state;
         render();
       }
@@ -253,17 +252,12 @@
         animation: 150,
         onEnd(evt) {
           if (evt.oldIndex === evt.newIndex) return;
-          reorderPending = true;
-          // Build new seats array from current DOM order
+          // Build new seats array from current DOM order using live state
           const rows = Array.from(playerList.querySelectorAll('.player-row'));
-          const newSeats = rows.map(row => {
-            const idx = parseInt(row.dataset.index);
-            return gs.seats[idx];
-          });
+          const newSeats = rows.map(row => state.seats[parseInt(row.dataset.index)]);
           // Reassign data-index after reorder
           rows.forEach((row, i) => { row.dataset.index = i; });
           send({ type: 'REORDER_SEATS', seats: newSeats });
-          setTimeout(() => { reorderPending = false; }, 500);
         },
       });
     }
