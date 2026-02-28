@@ -56,7 +56,7 @@
       container.classList.add('has-strip');
 
       const alive = gs.seats.filter(s => s.name && s.state === 'alive').length;
-      const needed = Math.floor(alive / 2) + 1;
+      const needed = Math.ceil(alive / 2);
 
       document.getElementById('block-name').textContent =
         `${blockSeat.name} is on the block`;
