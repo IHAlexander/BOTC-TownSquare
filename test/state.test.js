@@ -226,7 +226,7 @@ test('EXECUTE_PLAYER marks on-block player as dead', () => {
   state.seats[0].name = 'Alice';
   state.seats[0].onBlock = true;
   applyAction(state, { type: 'EXECUTE_PLAYER' });
-  assert.equal(state.seats[0].state, 'dead_no_vote');
+  assert.equal(state.seats[0].state, 'dead_vote');
   assert.equal(state.seats[0].onBlock, false);
   assert.equal(state.seats[0].blockVotes, 0);
 });
