@@ -11,6 +11,14 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.1.3] - 2026-03-01
+
+### Fixed
+- Alive token colour changed from dark red to parchment/cream; dead token colour changed from dark grey to dark purple, matching the design spec
+- Ghost vote badge now only shown on `dead_vote` tokens; `dead_no_vote` tokens show no badge (previously showed a greyed-out spent indicator)
+
+---
+
 ## [1.1.2] - 2026-02-28
 
 ### Fixed

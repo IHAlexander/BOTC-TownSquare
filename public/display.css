@@ -3,10 +3,10 @@
   --bg-night: #05050f;
   --accent-day: #ffd700;
   --accent-night: #7b7bff;
-  --token-alive-bg: #6b0000;
-  --token-alive-bg2: #3d0000;
-  --token-alive-border: #ff4444;
-  --token-alive-glow: rgba(255, 68, 68, 0.55);
+  --token-alive-bg: #f0deb4;
+  --token-alive-bg2: #dcc78a;
+  --token-alive-border: #c8a96e;
+  --token-alive-glow: rgba(200, 169, 110, 0.5);
   --token-dead-bg: #1c1c1c;
   --token-dead-border: #444;
   --token-name: #f0e6d0;
@@ -181,16 +181,21 @@ body.night #phase-banner {
 
 /* Alive */
 .token.alive .token-circle {
-  background: radial-gradient(circle at 38% 35%, #b01414, var(--token-alive-bg2));
+  background: radial-gradient(circle at 38% 35%, #f8edd2, var(--token-alive-bg2));
   border: 3px solid var(--token-alive-border);
-  box-shadow: 0 0 18px var(--token-alive-glow), inset 0 1px 0 rgba(255,255,255,0.15);
+  box-shadow: 0 0 18px var(--token-alive-glow), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.token.alive .token-name {
+  color: #3a2000;
+  text-shadow: none;
 }
 
 /* Dead */
 .token.dead_vote .token-circle,
 .token.dead_no_vote .token-circle {
-  background: radial-gradient(circle at 38% 35%, #2e2e2e, #141414);
-  border: 2px solid var(--token-dead-border);
+  background: radial-gradient(circle at 38% 35%, #3d2470, #1a0f2e);
+  border: 2px solid #6b4fa0;
   box-shadow: none;
 }
 
@@ -223,13 +228,6 @@ body.night #phase-banner {
 }
 
 .token.dead_vote .vote-badge::after { content: 'V'; }
-
-.token.dead_no_vote .vote-badge {
-  background: #3a3a3a;
-  color: #666;
-}
-
-.token.dead_no_vote .vote-badge::after { content: '—'; }
 
 /* Shroud diagonal stripe on dead tokens */
 .token.dead_vote .token-circle::after,
