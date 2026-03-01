@@ -163,8 +163,8 @@
       badge.style.height = `${badgePx}px`;
       badge.style.fontSize = `${Math.round(badgePx * 0.55)}px`;
 
-      // Hide badge for alive / empty
-      badge.style.display = (seat.state === 'dead_vote' || seat.state === 'dead_no_vote') && !isEmpty
+      // Show badge only for dead_vote (unspent ghost vote)
+      badge.style.display = seat.state === 'dead_vote' && !isEmpty
         ? 'flex' : 'none';
     });
   }
