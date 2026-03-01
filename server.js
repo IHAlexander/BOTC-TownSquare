@@ -98,8 +98,6 @@ wss.on('connection', ws => {
       return;
     }
 
-    snapshot();
-
     if (msg.type === 'UNDO') {
       if (previousState) {
         gameState = previousState;
@@ -121,6 +119,7 @@ wss.on('connection', ws => {
       return;
     }
 
+    snapshot();
     const { changed } = applyAction(gameState, msg);
     if (changed) {
       saveState();
