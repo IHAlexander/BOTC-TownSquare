@@ -40,6 +40,21 @@
   const scValue = document.getElementById('sc-value');
   const majorityInfo = document.getElementById('majority-info');
 
+  // ── Nomination bar refs ────────────────────────────────────
+  const nomBar        = document.getElementById('nomination-bar');
+  const nomControls   = document.getElementById('nom-controls');
+  const nomNominator  = document.getElementById('nom-nominator');
+  const nomNominee    = document.getElementById('nom-nominee');
+  const nomSubmitBtn  = document.getElementById('nom-submit-btn');
+  const nomVoteRow    = document.getElementById('nom-vote-row');
+  const nomVotesInput = document.getElementById('nom-votes-input');
+  const nomVotesBtn   = document.getElementById('nom-votes-btn');
+  const nomCancelBtn  = document.getElementById('nom-cancel-btn');
+  const nomExecuteRow = document.getElementById('nom-execute-row');
+  const nomExecuteName = document.getElementById('nom-execute-name');
+  const nomExecuteBtn = document.getElementById('nom-execute-btn');
+  const nomLogList    = document.getElementById('nom-log-list');
+
   undoBtn.addEventListener('click', () => send({ type: 'UNDO' }));
 
   titleInput.addEventListener('change', () => {
@@ -67,6 +82,27 @@
     }
   });
 
+  // ── Nomination bar events ──────────────────────────────────
+  nomSubmitBtn.addEventListener('click', () => {
+    const nominatorIdx = parseInt(nomNominator.value);
+    const nomineeIdx   = parseInt(nomNominee.value);
+    if (isNaN(nominatorIdx) || isNaN(nomineeIdx)) return;
+    send({ type: 'NOMINATE', nominatorIdx, nomineeIdx });
+  });
+
+  nomVotesBtn.addEventListener('click', () => {
+    send({ type: 'SUBMIT_VOTES', votes: parseInt(nomVotesInput.value) || 0 });
+  });
+
+  nomCancelBtn.addEventListener('click', () => {
+    send({ type: 'CANCEL_NOMINATION' });
+  });
+
+  nomExecuteBtn.addEventListener('click', () => {
+    const name = nomExecuteName.textContent.replace(' marked for execution', '') || 'this player';
+    if (confirm(`Execute ${name}?`)) send({ type: 'EXECUTE_MARKED' });
+  });
+
   // ── Player list render ─────────────────────────────────────
   const playerList = document.getElementById('player-list');
 
@@ -89,6 +125,7 @@
       el.innerHTML = `
         <div class="row-main">
           <span class="drag-handle">⠿</span>
+          <span class="nom-indicator"></span>
           <input class="seat-name-input" type="text" maxlength="30"
             placeholder="Empty seat…" autocomplete="off" spellcheck="false">
           <button class="state-btn"></button>
@@ -189,6 +226,55 @@
 
     el.querySelector('.vote-count').textContent = seat.blockVotes || 0;
     el.querySelector('.show-votes-cb').checked = gs.showVotesOnTV;
+
+    // Nomination indicator dot
+    const indicator = el.querySelector('.nom-indicator');
+    indicator.className = 'nom-indicator' +
+      (seat.isCurrentNominator ? ' nominator' : '') +
+      (seat.isCurrentNominee   ? ' nominee'   : '') +
+      (seat.markedForExecution && !seat.isCurrentNominee ? ' marked' : '');
+  }
+
+  function renderNominationBar(gs) {
+    const isDay = gs.phase === 'day';
+    nomBar.classList.toggle('night-disabled', !isDay);
+
+    // Populate nominator select (alive, named, not yet nominated)
+    const prevNominatorVal = nomNominator.value;
+    nomNominator.innerHTML = '<option value="">Nominator…</option>';
+    gs.seats.forEach((seat, i) => {
+      if (seat.name && seat.state === 'alive' && !seat.hasNominated) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = seat.name;
+        if (String(i) === prevNominatorVal) opt.selected = true;
+        nomNominator.appendChild(opt);
+      }
+    });
+
+    // Populate nominee select (named, not yet nominated)
+    const prevNomineeVal = nomNominee.value;
+    nomNominee.innerHTML = '<option value="">Nominee…</option>';
+    gs.seats.forEach((seat, i) => {
+      if (seat.name && !seat.hasBeenNominated) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.textContent = seat.name;
+        if (String(i) === prevNomineeVal) opt.selected = true;
+        nomNominee.appendChild(opt);
+      }
+    });
+
+    // Toggle controls vs vote row
+    nomControls.classList.toggle('hidden', gs.nominationInProgress);
+    nomVoteRow.classList.toggle('hidden', !gs.nominationInProgress);
+
+    // Execute row
+    const markedSeat = gs.seats.find(s => s.markedForExecution && s.name);
+    nomExecuteRow.classList.toggle('hidden', !markedSeat);
+    if (markedSeat) {
+      nomExecuteName.textContent = `${markedSeat.name} marked for execution`;
+    }
   }
 
   function render() {
@@ -222,9 +308,11 @@
 
     // Majority
     const alive = gs.seats.filter(s => s.name && s.state === 'alive').length;
-    const named = gs.seats.filter(s => s.name).length;
     const needed = alive > 0 ? Math.ceil(alive / 2) : 0;
     majorityInfo.textContent = `${alive} alive · ${needed} to execute`;
+
+    // Nomination bar
+    renderNominationBar(gs);
 
     // Reconcile player rows
     const currentRows = Array.from(playerList.querySelectorAll('.player-row'));
@@ -269,6 +357,14 @@
       const li = document.createElement('li');
       li.innerHTML = `<span class="time">${entry.time}</span>${entry.text}`;
       logList.appendChild(li);
+    });
+
+    // Nomination log
+    nomLogList.innerHTML = '';
+    (gs.nominationLog || []).slice().reverse().forEach(entry => {
+      const li = document.createElement('li');
+      li.textContent = `[${entry.time}] ${entry.text}`;
+      nomLogList.appendChild(li);
     });
   }
 })();

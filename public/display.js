@@ -132,6 +132,7 @@
         el.dataset.index = i;
         el.innerHTML = `
           <div class="token-circle">
+            <span class="exec-badge"></span>
             <span class="vote-badge"></span>
           </div>
           <div class="token-name"></div>`;
@@ -147,18 +148,28 @@
       circle.style.width = `${sz}px`;
       circle.style.height = `${sz}px`;
 
+      const execBadge = el.querySelector('.exec-badge');
       const badge = el.querySelector('.vote-badge');
       const nameEl = el.querySelector('.token-name');
 
       // State classes
       const isEmpty = !seat.name;
-      el.className = 'token ' + (isEmpty ? 'empty' : seat.state) + (seat.onBlock ? ' on-block' : '');
+      el.className = 'token ' +
+        (isEmpty ? 'empty' : seat.state) +
+        (seat.onBlock ? ' on-block' : '') +
+        (seat.markedForExecution && !isEmpty ? ' marked-exec' : '');
 
       nameEl.textContent = seat.name || 'Empty';
       nameEl.style.maxWidth = `${sz + 20}px`;
 
-      // Badge size
+      // Exec badge size and visibility
       const badgePx = Math.round(sz * 0.28);
+      execBadge.style.width = `${badgePx}px`;
+      execBadge.style.height = `${badgePx}px`;
+      execBadge.style.fontSize = `${Math.round(badgePx * 0.55)}px`;
+      execBadge.style.display = seat.markedForExecution && !isEmpty ? 'flex' : 'none';
+
+      // Ghost vote badge size and visibility
       badge.style.width = `${badgePx}px`;
       badge.style.height = `${badgePx}px`;
       badge.style.fontSize = `${Math.round(badgePx * 0.55)}px`;

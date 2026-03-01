@@ -34,11 +34,34 @@
     <span id="majority-info"></span>
   </div>
 
+  <!-- Nomination bar -->
+  <div id="nomination-bar">
+    <div id="nom-controls">
+      <select id="nom-nominator"><option value="">Nominator…</option></select>
+      <span class="nom-label">nominates</span>
+      <select id="nom-nominee"><option value="">Nominee…</option></select>
+      <button id="nom-submit-btn">Nominate</button>
+    </div>
+    <div id="nom-vote-row" class="hidden">
+      <label class="nom-vote-label">Votes: <input id="nom-votes-input" type="number" min="0" max="20" value="0"></label>
+      <button id="nom-votes-btn">Submit Votes</button>
+      <button id="nom-cancel-btn">Cancel</button>
+    </div>
+    <div id="nom-execute-row" class="hidden">
+      <span id="nom-execute-name"></span>
+      <button id="nom-execute-btn">⚰ Execute Marked</button>
+    </div>
+  </div>
+
   <!-- Player list -->
   <ul id="player-list"></ul>
 
   <!-- Footer -->
   <div id="footer">
+    <details id="nom-log-details">
+      <summary>Nomination Log</summary>
+      <ul id="nom-log-list"></ul>
+    </details>
     <details id="log-details">
       <summary>Game Log</summary>
       <ul id="log-list"></ul>

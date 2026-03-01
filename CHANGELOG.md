@@ -11,6 +11,26 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.2.0] - 2026-03-01
+
+### Added
+- Nomination and voting system on the ST console
+  - Nominator and nominee dropdowns (alive-only nominators; any named player as nominee)
+  - BOTC rules enforced: each alive player may nominate once per day; each player may be nominated once per day
+  - Vote count input with outcome logic: safe / marked for execution / tie (clears all marks)
+  - "Execute Marked" button: kills the marked player (retains ghost vote), transitions to Night
+  - Nomination resets automatically at the start of each Day
+- Execution mark badge (⚰) on TV token for the player currently marked for execution
+- Nomination indicator dots on ST player rows (gold = nominator, red = nominee / marked)
+- Nomination log panel in ST footer showing full vote history for the game
+
+### Changed
+- `lib/state.js`: `makeSeat()` gains 5 new boolean fields; `makeDefaultState()` gains `nominationInProgress`, `highestVotes`, `nominationLog`
+- `SET_PHASE` to Day now resets per-seat nomination booleans and `highestVotes` (nomination log is never cleared)
+- New actions: `NOMINATE`, `CANCEL_NOMINATION`, `SUBMIT_VOTES`, `EXECUTE_MARKED`
+
+---
+
 ## [1.1.4] - 2026-03-01
 
 ### Fixed
