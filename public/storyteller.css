@@ -308,6 +308,177 @@ body { display: flex; flex-direction: column; }
 }
 .execute-btn:hover { background: #e0243f; }
 
+.hidden { display: none !important; }
+
+/* ── Nomination bar ── */
+#nomination-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+#nomination-bar.night-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+#nom-controls,
+#nom-vote-row,
+#nom-execute-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nom-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+#nom-nominator,
+#nom-nominee {
+  flex: 1;
+  min-width: 80px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 0 8px;
+  height: 36px;
+  font-size: 14px;
+}
+
+#nom-submit-btn,
+#nom-votes-btn {
+  background: var(--accent-dim);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0 14px;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+#nom-submit-btn:hover,
+#nom-votes-btn:hover { background: var(--accent); }
+
+#nom-cancel-btn {
+  background: var(--surface);
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 12px;
+  height: 36px;
+  font-size: 13px;
+  cursor: pointer;
+}
+#nom-cancel-btn:hover { color: var(--text); }
+
+.nom-vote-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#nom-votes-input {
+  width: 56px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 0 8px;
+  height: 36px;
+  font-size: 16px;
+  text-align: center;
+}
+
+#nom-execute-row {
+  background: rgba(196,30,58,0.12);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  border: 1px solid rgba(196,30,58,0.3);
+}
+
+#nom-execute-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+#nom-execute-btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  padding: 0 14px;
+  height: 36px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+#nom-execute-btn:hover { background: #e0243f; }
+
+/* nom-indicator dot on player rows */
+.nom-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: transparent;
+  transition: background 0.2s;
+}
+.nom-indicator.nominator { background: var(--gold); }
+.nom-indicator.nominee { background: var(--accent); }
+.nom-indicator.marked {
+  background: var(--accent);
+  animation: nom-pulse 1s ease-in-out infinite;
+}
+@keyframes nom-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* ── Nomination log ── */
+#nom-log-details {
+  border-bottom: 1px solid var(--border);
+}
+
+#nom-log-details summary {
+  padding: 10px 14px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 13px;
+  user-select: none;
+}
+#nom-log-details summary:hover { color: var(--text); }
+
+#nom-log-list {
+  list-style: none;
+  max-height: 120px;
+  overflow-y: auto;
+  padding: 4px 0 8px;
+}
+
+#nom-log-list li {
+  padding: 3px 14px;
+  font-size: 12px;
+  color: var(--text-dim);
+  font-family: monospace;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+
 /* ── Footer ── */
 #footer {
   background: var(--surface);

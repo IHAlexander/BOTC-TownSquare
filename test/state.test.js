@@ -250,3 +250,266 @@ test('unknown action returns changed=false', () => {
   const { changed } = applyAction(state, { type: 'DOES_NOT_EXIST' });
   assert.equal(changed, false);
 });
+
+// ── makeSeat / makeDefaultState new fields ─────────────────────────────────
+test('makeSeat has nomination fields defaulting to false', () => {
+  const seat = makeSeat();
+  assert.equal(seat.hasNominated, false);
+  assert.equal(seat.hasBeenNominated, false);
+  assert.equal(seat.isCurrentNominator, false);
+  assert.equal(seat.isCurrentNominee, false);
+  assert.equal(seat.markedForExecution, false);
+});
+
+test('makeDefaultState has nominationInProgress false', () => {
+  assert.equal(gs().nominationInProgress, false);
+});
+
+test('makeDefaultState has highestVotes 0', () => {
+  assert.equal(gs().highestVotes, 0);
+});
+
+test('makeDefaultState has empty nominationLog', () => {
+  assert.deepEqual(gs().nominationLog, []);
+});
+
+// ── SET_PHASE nomination resets ────────────────────────────────────────────
+test('SET_PHASE to day resets per-seat nomination booleans', () => {
+  const state = gs();
+  state.seats[0].name = 'Alice';
+  state.seats[0].hasNominated = true;
+  state.seats[0].markedForExecution = true;
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  assert.equal(state.seats[0].hasNominated, false);
+  assert.equal(state.seats[0].markedForExecution, false);
+});
+
+test('SET_PHASE to day resets highestVotes', () => {
+  const state = gs();
+  state.highestVotes = 7;
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  assert.equal(state.highestVotes, 0);
+});
+
+test('SET_PHASE to day does not clear nominationLog', () => {
+  const state = gs();
+  state.nominationLog.push({ time: '12:00', text: 'old entry' });
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  assert.equal(state.nominationLog.length, 1);
+});
+
+test('SET_PHASE to night does not reset highestVotes', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  state.highestVotes = 5;
+  applyAction(state, { type: 'SET_PHASE', phase: 'night' });
+  assert.equal(state.highestVotes, 5);
+});
+
+// ── NOMINATE ───────────────────────────────────────────────────────────────
+test('NOMINATE sets flags correctly', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  state.seats[0].name = 'Alice';
+  state.seats[1].name = 'Bob';
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  assert.equal(state.nominationInProgress, true);
+  assert.equal(state.seats[0].hasNominated, true);
+  assert.equal(state.seats[0].isCurrentNominator, true);
+  assert.equal(state.seats[1].hasBeenNominated, true);
+  assert.equal(state.seats[1].isCurrentNominee, true);
+});
+
+test('NOMINATE adds log entries', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  state.seats[0].name = 'Alice';
+  state.seats[1].name = 'Bob';
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  assert.ok(state.log[0].text.includes('Alice'));
+  assert.ok(state.log[0].text.includes('Bob'));
+  assert.equal(state.nominationLog.length, 1);
+});
+
+test('NOMINATE guard: not day phase returns changed=false', () => {
+  const state = gs(); // starts as night
+  state.seats[0].name = 'Alice';
+  state.seats[1].name = 'Bob';
+  const { changed } = applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  assert.equal(changed, false);
+  assert.equal(state.nominationInProgress, false);
+});
+
+test('NOMINATE guard: nomination already in progress returns changed=false', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  state.seats[0].name = 'Alice';
+  state.seats[1].name = 'Bob';
+  state.seats[2].name = 'Charlie';
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  const { changed } = applyAction(state, { type: 'NOMINATE', nominatorIdx: 2, nomineeIdx: 1 });
+  assert.equal(changed, false);
+});
+
+test('NOMINATE guard: self-nomination returns changed=false', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  state.seats[0].name = 'Alice';
+  const { changed } = applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 0 });
+  assert.equal(changed, false);
+});
+
+test('NOMINATE guard: dead nominator returns changed=false', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  state.seats[0].name = 'Alice';
+  state.seats[0].state = 'dead_vote';
+  state.seats[1].name = 'Bob';
+  const { changed } = applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  assert.equal(changed, false);
+});
+
+test('NOMINATE guard: nominator already nominated returns changed=false', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  state.seats[0].name = 'Alice';
+  state.seats[0].hasNominated = true;
+  state.seats[1].name = 'Bob';
+  const { changed } = applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  assert.equal(changed, false);
+});
+
+test('NOMINATE guard: nominee already nominated returns changed=false', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  state.seats[0].name = 'Alice';
+  state.seats[1].name = 'Bob';
+  state.seats[1].hasBeenNominated = true;
+  const { changed } = applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  assert.equal(changed, false);
+});
+
+// ── CANCEL_NOMINATION ──────────────────────────────────────────────────────
+test('CANCEL_NOMINATION clears current flags', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  state.seats[0].name = 'Alice';
+  state.seats[1].name = 'Bob';
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  applyAction(state, { type: 'CANCEL_NOMINATION' });
+  assert.equal(state.nominationInProgress, false);
+  assert.equal(state.seats[0].isCurrentNominator, false);
+  assert.equal(state.seats[1].isCurrentNominee, false);
+});
+
+test('CANCEL_NOMINATION preserves hasNominated and hasBeenNominated', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  state.seats[0].name = 'Alice';
+  state.seats[1].name = 'Bob';
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  applyAction(state, { type: 'CANCEL_NOMINATION' });
+  assert.equal(state.seats[0].hasNominated, true);
+  assert.equal(state.seats[1].hasBeenNominated, true);
+});
+
+test('CANCEL_NOMINATION with no active nomination returns changed=false', () => {
+  const state = gs();
+  const { changed } = applyAction(state, { type: 'CANCEL_NOMINATION' });
+  assert.equal(changed, false);
+});
+
+// ── SUBMIT_VOTES ───────────────────────────────────────────────────────────
+function setupNomination(state) {
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  for (let i = 0; i < 8; i++) state.seats[i].name = `P${i}`;
+  // 8 alive players → threshold = ceil(8/2) = 4
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+}
+
+test('SUBMIT_VOTES safe: votes below threshold', () => {
+  const state = gs();
+  setupNomination(state);
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 3 });
+  assert.equal(state.seats[1].markedForExecution, false);
+  assert.equal(state.highestVotes, 0);
+  assert.equal(state.nominationInProgress, false);
+});
+
+test('SUBMIT_VOTES marks for execution when votes beat highestVotes', () => {
+  const state = gs();
+  setupNomination(state);
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 5 });
+  assert.equal(state.seats[1].markedForExecution, true);
+  assert.equal(state.highestVotes, 5);
+});
+
+test('SUBMIT_VOTES tie clears all marks', () => {
+  const state = gs();
+  setupNomination(state);
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 5 }); // Alice marked
+  // Start second nomination
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 2, nomineeIdx: 3 });
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 5 }); // tie
+  assert.equal(state.seats[1].markedForExecution, false);
+  assert.equal(state.seats[3].markedForExecution, false);
+});
+
+test('SUBMIT_VOTES safe when votes above threshold but below highestVotes', () => {
+  const state = gs();
+  setupNomination(state);
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 6 }); // P1 marked, highestVotes=6
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 2, nomineeIdx: 3 });
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 5 }); // above threshold but < 6
+  assert.equal(state.seats[1].markedForExecution, true); // P1 still marked
+  assert.equal(state.seats[3].markedForExecution, false);
+});
+
+test('SUBMIT_VOTES logs vote result to nominationLog', () => {
+  const state = gs();
+  setupNomination(state);
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 5 });
+  assert.equal(state.nominationLog.length, 2); // NOMINATE + SUBMIT_VOTES
+});
+
+test('SUBMIT_VOTES guard: no nomination in progress returns changed=false', () => {
+  const state = gs();
+  const { changed } = applyAction(state, { type: 'SUBMIT_VOTES', votes: 5 });
+  assert.equal(changed, false);
+});
+
+// ── EXECUTE_MARKED ─────────────────────────────────────────────────────────
+test('EXECUTE_MARKED kills marked player and transitions to night', () => {
+  const state = gs();
+  setupNomination(state);
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 5 });
+  const dayNumber = state.dayNumber;
+  applyAction(state, { type: 'EXECUTE_MARKED' });
+  assert.equal(state.seats[1].state, 'dead_vote');
+  assert.equal(state.phase, 'night');
+  assert.equal(state.dayNumber, dayNumber + 1);
+});
+
+test('EXECUTE_MARKED clears all nomination flags', () => {
+  const state = gs();
+  setupNomination(state);
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 5 });
+  applyAction(state, { type: 'EXECUTE_MARKED' });
+  assert.ok(state.seats.every(s => !s.markedForExecution));
+  assert.ok(state.seats.every(s => !s.hasNominated));
+  assert.equal(state.nominationInProgress, false);
+});
+
+test('EXECUTE_MARKED logs execution events', () => {
+  const state = gs();
+  setupNomination(state);
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 5 });
+  applyAction(state, { type: 'EXECUTE_MARKED' });
+  assert.ok(state.log[1].text.includes('executed'));
+});
+
+test('EXECUTE_MARKED guard: no marked seat returns changed=false', () => {
+  const state = gs();
+  const { changed } = applyAction(state, { type: 'EXECUTE_MARKED' });
+  assert.equal(changed, false);
+});
