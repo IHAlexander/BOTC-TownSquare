@@ -11,6 +11,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.1.4] - 2026-03-01
+
+### Fixed
+- Undo button was broken: `snapshot()` was called before the UNDO handler, causing it to overwrite the saved previous state with the current state before restoring it (a no-op). Moved `snapshot()` to after the UNDO and RESET guards so it only runs for actual state-mutating actions.
+
+---
+
 ## [1.1.3] - 2026-03-01
 
 ### Fixed
