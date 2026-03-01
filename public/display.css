@@ -186,11 +186,6 @@ body.night #phase-banner {
   box-shadow: 0 0 18px var(--token-alive-glow), inset 0 1px 0 rgba(255,255,255,0.3);
 }
 
-.token.alive .token-name {
-  color: #3a2000;
-  text-shadow: none;
-}
-
 /* Dead */
 .token.dead_vote .token-circle,
 .token.dead_no_vote .token-circle {
@@ -201,7 +196,7 @@ body.night #phase-banner {
 
 .token.dead_vote .token-name,
 .token.dead_no_vote .token-name {
-  color: #888;
+  color: #bbb;
 }
 
 /* Ghost vote badge */
