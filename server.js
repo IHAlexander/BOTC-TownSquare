@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const QRCode = require('qrcode');
-const { makeDefaultState, applyAction } = require('./lib/state');
+const { makeSeat, makeDefaultState, applyAction } = require('./lib/state');
 
 const PORT = process.env.PORT || 3000;
 const STATE_FILE = path.join(__dirname, 'state.json');
@@ -118,6 +118,25 @@ wss.on('connection', ws => {
         saveState();
         broadcast();
       }
+      return;
+    }
+
+    if (msg.type === 'SOFT_RESET') {
+      const oldSeats = gameState.seats;
+      const oldSeatCount = gameState.seatCount;
+      gameState = makeDefaultState();
+      gameState.seatCount = oldSeatCount;
+      gameState.seats = Array.from({ length: oldSeatCount }, (_, i) => {
+        const seat = makeSeat();
+        seat.name = oldSeats[i] ? oldSeats[i].name : '';
+        return seat;
+      });
+      previousState = null;
+      const now = new Date();
+      const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+      gameState.log.unshift({ time, text: 'Game reset (players kept)' });
+      saveState();
+      broadcast();
       return;
     }
 

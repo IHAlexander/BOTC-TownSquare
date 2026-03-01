@@ -11,6 +11,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.3.0] - 2026-03-01
+
+### Added
+- Reset modal replaces the native `confirm()` dialog, offering two options:
+  - **Keep Players** (`SOFT_RESET`): resets phase to Night 1, all seat states to alive, clears nomination state and logs, preserves player names and seat count
+  - **Full Reset** (`RESET`): existing behaviour — clears everything including player names
+
+---
+
 ## [1.2.0] - 2026-03-01
 
 ### Added
