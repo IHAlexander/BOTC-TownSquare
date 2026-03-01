@@ -76,10 +76,20 @@
     send({ type: 'SET_SEAT_COUNT', count: Math.min(20, state.seatCount + 1) });
   });
 
+  const resetModal = document.getElementById('reset-modal');
+
   document.getElementById('reset-btn').addEventListener('click', () => {
-    if (confirm('Reset the game? This will clear all players and start fresh.')) {
-      send({ type: 'RESET' });
-    }
+    resetModal.classList.remove('hidden');
+  });
+
+  document.getElementById('reset-keep-btn').addEventListener('click', () => {
+    resetModal.classList.add('hidden');
+    send({ type: 'SOFT_RESET' });
+  });
+
+  document.getElementById('reset-full-btn').addEventListener('click', () => {
+    resetModal.classList.add('hidden');
+    send({ type: 'RESET' });
   });
 
   // ── Nomination bar events ──────────────────────────────────
