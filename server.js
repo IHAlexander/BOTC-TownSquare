@@ -29,6 +29,19 @@ let gameState = makeDefaultState();
 if (fs.existsSync(STATE_FILE)) {
   try {
     gameState = JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+    // Backfill fields added in v1.2.0 that may be missing from older state.json files
+    if (!Array.isArray(gameState.nominationLog)) gameState.nominationLog = [];
+    if (gameState.nominationInProgress === undefined) gameState.nominationInProgress = false;
+    if (gameState.highestVotes === undefined) gameState.highestVotes = 0;
+    if (Array.isArray(gameState.seats)) {
+      gameState.seats.forEach(seat => {
+        if (seat.hasNominated === undefined) seat.hasNominated = false;
+        if (seat.hasBeenNominated === undefined) seat.hasBeenNominated = false;
+        if (seat.isCurrentNominator === undefined) seat.isCurrentNominator = false;
+        if (seat.isCurrentNominee === undefined) seat.isCurrentNominee = false;
+        if (seat.markedForExecution === undefined) seat.markedForExecution = false;
+      });
+    }
   } catch {
     console.warn('Could not load state.json, using defaults');
   }
