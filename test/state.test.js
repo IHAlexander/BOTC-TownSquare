@@ -478,6 +478,62 @@ test('SUBMIT_VOTES guard: no nomination in progress returns changed=false', () =
   assert.equal(changed, false);
 });
 
+// ── SUBMIT_VOTES majority threshold (living players only) ──────────────────
+test('SUBMIT_VOTES threshold ignores dead players with ghost votes', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  for (let i = 0; i < 8; i++) state.seats[i].name = `P${i}`;
+  // 6 alive + 2 dead with unspent ghost votes → threshold = ceil(6/2) = 3
+  state.seats[6].state = 'dead_vote';
+  state.seats[7].state = 'dead_vote';
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 3 });
+  assert.equal(state.seats[1].markedForExecution, true);
+  assert.equal(state.highestVotes, 3);
+  assert.ok(state.log[0].text.includes('need 3'));
+});
+
+test('SUBMIT_VOTES threshold ignores dead players without ghost votes', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  for (let i = 0; i < 8; i++) state.seats[i].name = `P${i}`;
+  state.seats[6].state = 'dead_no_vote';
+  state.seats[7].state = 'dead_no_vote';
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 3 });
+  assert.equal(state.seats[1].markedForExecution, true);
+});
+
+test('SUBMIT_VOTES threshold with 7 alive and 1 ghost vote is 4', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  for (let i = 0; i < 8; i++) state.seats[i].name = `P${i}`;
+  state.seats[7].state = 'dead_vote';
+  // threshold = ceil(7/2) = 4
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 3 });
+  assert.equal(state.seats[1].markedForExecution, false);
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 2, nomineeIdx: 3 });
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 4 });
+  assert.equal(state.seats[3].markedForExecution, true);
+  assert.equal(state.highestVotes, 4);
+});
+
+test('SUBMIT_VOTES threshold shrinks as players die (4 alive + 4 ghost votes → 2)', () => {
+  const state = gs();
+  applyAction(state, { type: 'SET_PHASE', phase: 'day' });
+  for (let i = 0; i < 8; i++) state.seats[i].name = `P${i}`;
+  state.seats[4].state = 'dead_vote';
+  state.seats[5].state = 'dead_vote';
+  state.seats[6].state = 'dead_vote';
+  state.seats[7].state = 'dead_vote';
+  // threshold = ceil(4/2) = 2 (was 4 before the fix)
+  applyAction(state, { type: 'NOMINATE', nominatorIdx: 0, nomineeIdx: 1 });
+  applyAction(state, { type: 'SUBMIT_VOTES', votes: 2 });
+  assert.equal(state.seats[1].markedForExecution, true);
+  assert.ok(state.log[0].text.includes('need 2'));
+});
+
 // ── EXECUTE_MARKED ─────────────────────────────────────────────────────────
 test('EXECUTE_MARKED kills marked player and transitions to night', () => {
   const state = gs();

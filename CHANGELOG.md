@@ -11,6 +11,13 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.3.1] - 2026-10-03
+
+### Fixed
+- `SUBMIT_VOTES` majority threshold counted dead players with unspent ghost votes in the denominator, so it could require more votes than the TV display and ST console showed (`ceil(living players / 2)`). The threshold now counts living players only; ghost votes still count toward the vote tally, not the requirement.
+
+---
+
 ## [1.3.0] - 2026-03-01
 
 ### Added
