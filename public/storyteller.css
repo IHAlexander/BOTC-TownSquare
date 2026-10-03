@@ -514,8 +514,26 @@ body { display: flex; flex-direction: column; }
 }
 #log-list li span.time { color: #555; margin-right: 8px; }
 
+#footer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+}
+
+#lang-select {
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0 10px;
+  min-height: var(--tap-size);
+  font-size: 13px;
+  cursor: pointer;
+}
+
 #reset-btn {
-  width: 100%;
+  flex: 1;
   background: transparent;
   border: none;
   color: #c41e3a;

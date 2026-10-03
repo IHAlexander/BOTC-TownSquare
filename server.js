@@ -8,6 +8,7 @@ const path = require('path');
 const os = require('os');
 const QRCode = require('qrcode');
 const { makeSeat, makeDefaultState, applyAction } = require('./lib/state');
+const { getMessages, SUPPORTED_LANGUAGES, t } = require('./lib/i18n');
 
 const PORT = process.env.PORT || 3000;
 const STATE_FILE = path.join(__dirname, 'state.json');
@@ -33,6 +34,8 @@ if (fs.existsSync(STATE_FILE)) {
     if (!Array.isArray(gameState.nominationLog)) gameState.nominationLog = [];
     if (gameState.nominationInProgress === undefined) gameState.nominationInProgress = false;
     if (gameState.highestVotes === undefined) gameState.highestVotes = 0;
+    // Backfill fields added in v1.4.0
+    if (gameState.language === undefined) gameState.language = 'en';
     if (Array.isArray(gameState.seats)) {
       gameState.seats.forEach(seat => {
         if (seat.hasNominated === undefined) seat.hasNominated = false;
@@ -87,6 +90,8 @@ function buildBroadcast() {
     state: gameState,
     stConnected: stConnected(),
     qrCode: qrCodeDataUrl,
+    messages: getMessages(gameState.language),
+    languages: SUPPORTED_LANGUAGES,
   });
 }
 
@@ -121,11 +126,23 @@ wss.on('connection', ws => {
       return;
     }
 
+    // Language is a preference, not a game action: apply without an undo snapshot.
+    if (msg.type === 'SET_LANGUAGE') {
+      const { changed } = applyAction(gameState, msg);
+      if (changed) {
+        saveState();
+        broadcast();
+      }
+      return;
+    }
+
     if (msg.type === 'SOFT_RESET') {
       const oldSeats = gameState.seats;
       const oldSeatCount = gameState.seatCount;
+      const oldLanguage = gameState.language;
       gameState = makeDefaultState();
       gameState.seatCount = oldSeatCount;
+      gameState.language = oldLanguage || 'en';
       gameState.seats = Array.from({ length: oldSeatCount }, (_, i) => {
         const seat = makeSeat();
         seat.name = oldSeats[i] ? oldSeats[i].name : '';
@@ -134,18 +151,20 @@ wss.on('connection', ws => {
       previousState = null;
       const now = new Date();
       const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      gameState.log.unshift({ time, text: 'Game reset (players kept)' });
+      gameState.log.unshift({ time, text: t(gameState.language, 'log.gameResetPlayersKept') });
       saveState();
       broadcast();
       return;
     }
 
     if (msg.type === 'RESET') {
+      const oldLanguage = gameState.language;
       gameState = makeDefaultState();
+      gameState.language = oldLanguage || 'en';
       previousState = null;
       const now = new Date();
       const time = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-      gameState.log.unshift({ time, text: 'Game reset' });
+      gameState.log.unshift({ time, text: t(gameState.language, 'log.gameReset') });
       saveState();
       broadcast();
       return;

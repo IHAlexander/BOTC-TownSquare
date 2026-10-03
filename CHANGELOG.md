@@ -11,6 +11,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ---
 
+## [1.4.0] - 2026-10-03
+
+### Added
+- Localization: English and Simplified Chinese (zh-CN) for the TV display, the ST console, the game log, and the nomination log
+- Default session title is now empty in game state; the TV shows a localized default (`Blood on the Clocktower` / `染·钟楼谜团`) and the ST title input shows its placeholder until a title is set
+- Language selector in the ST console footer; the choice is stored in game state and followed by every connected client
+- `SET_LANGUAGE` action; game state gains a `language` field (older `state.json` files are backfilled with `en` on load)
+- `lib/i18n.js` — dependency-free message catalog with `{param}` interpolation, plural variants, and English fallback; the active language's messages travel in every STATE broadcast so clients share one source of truth
+
+---
+
 ## [1.3.0] - 2026-03-01
 
 ### Added

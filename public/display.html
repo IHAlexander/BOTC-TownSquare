@@ -12,7 +12,7 @@
   <div id="header">
     <span id="session-title"></span>
     <span id="phase-banner"></span>
-    <button id="fullscreen-btn" title="Enter fullscreen">&#9974;</button>
+    <button id="fullscreen-btn" title="Enter fullscreen" data-i18n-title="button.fullscreen">&#9974;</button>
   </div>
 
   <div id="block-strip" class="hidden">
@@ -25,10 +25,11 @@
   </div>
 
   <div id="qr-overlay" class="hidden">
-    <div id="qr-label">ST Console</div>
+    <div id="qr-label" data-i18n="qr.label">ST Console</div>
     <img id="qr-img" alt="ST Console QR Code">
   </div>
 
+  <script src="i18n.js"></script>
   <script src="display.js"></script>
 </body>
 </html>

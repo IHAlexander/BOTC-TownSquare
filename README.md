@@ -6,6 +6,7 @@ A virtual town square display for in-person **Blood on the Clocktower** games. T
 
 - Circular town square on a TV/monitor (up to 20 seats)
 - Mobile Storyteller console — no app install required
+- English / 简体中文 interface and game log, switchable from the ST console
 - Player states: Alive, Dead with ghost vote, Dead without ghost vote
 - Seat count adjustable (5–20) with drag-to-reorder
 - Day/Night phase toggle with visual theme change
@@ -73,6 +74,7 @@ The QR code disappears once the ST console connects.
 | ↩ Undo | Reverts the last action |
 | × | Clears a seat |
 | Game Log | Collapsible event history |
+| Language | Switches interface and log language for all screens |
 | Reset Game | Clears all players and resets to Night 1 |
 
 ## Development

@@ -2,6 +2,7 @@
   'use strict';
 
   let state = null;
+  let currentLang = null;
 
   // ── WebSocket ──────────────────────────────────────────────
   function connect() {
@@ -16,6 +17,13 @@
       if (msg.type === 'STATE') {
         const prevPhase = state ? state.state.phase : null;
         state = msg;
+        I18N.setMessages(msg.messages);
+        if (msg.state.language !== currentLang) {
+          currentLang = msg.state.language;
+          document.documentElement.lang = currentLang;
+          document.title = I18N.t('app.title');
+          I18N.applyStatic();
+        }
         render(prevPhase);
       }
     };
@@ -42,9 +50,9 @@
     document.body.classList.toggle('night', gs.phase === 'night');
 
     // Header
-    document.getElementById('session-title').textContent = gs.title || '';
+    document.getElementById('session-title').textContent = gs.title || I18N.t('title.default');
     document.getElementById('phase-banner').textContent =
-      `${gs.phase === 'day' ? 'Day' : 'Night'} ${gs.dayNumber}`;
+      I18N.t(gs.phase === 'day' ? 'phase.day' : 'phase.night', { n: gs.dayNumber });
 
     // On-the-block strip
     const blockSeat = gs.seats.find(s => s.onBlock);
@@ -59,11 +67,13 @@
       const needed = Math.ceil(alive / 2);
 
       document.getElementById('block-name').textContent =
-        `${blockSeat.name} is on the block`;
+        I18N.t('block.onBlock', { name: blockSeat.name });
 
-      let voteText = `${needed} vote${needed !== 1 ? 's' : ''} needed for majority`;
+      const majority = I18N.t(needed === 1 ? 'block.majority_one' : 'block.majority_other', { n: needed });
+      let voteText = majority;
       if (gs.showVotesOnTV) {
-        voteText = `${blockSeat.blockVotes} vote${blockSeat.blockVotes !== 1 ? 's' : ''} so far  ·  ${voteText}`;
+        const soFar = I18N.t(blockSeat.blockVotes === 1 ? 'block.votesSoFar_one' : 'block.votesSoFar_other', { n: blockSeat.blockVotes });
+        voteText = `${soFar}  ·  ${majority}`;
       }
       document.getElementById('block-votes-info').textContent = voteText;
     } else {
@@ -159,7 +169,7 @@
         (seat.onBlock ? ' on-block' : '') +
         (seat.markedForExecution && !isEmpty ? ' marked-exec' : '');
 
-      nameEl.textContent = seat.name || 'Empty';
+      nameEl.textContent = seat.name || I18N.t('seat.empty');
       nameEl.style.maxWidth = `${sz + 20}px`;
 
       // Exec badge size and visibility

@@ -4,6 +4,9 @@
   let state = null;
   let ws = null;
   let sortable = null;
+  let languages = [];
+  let currentLang = null;
+  let markedSeatName = '';
 
   // ── WebSocket ──────────────────────────────────────────────
   function connect() {
@@ -17,6 +20,14 @@
       const msg = JSON.parse(e.data);
       if (msg.type === 'STATE') {
         state = msg.state;
+        languages = msg.languages || [];
+        I18N.setMessages(msg.messages);
+        if (msg.state.language !== currentLang) {
+          currentLang = msg.state.language;
+          document.documentElement.lang = currentLang;
+          document.title = I18N.t('app.stTitle');
+          I18N.applyStatic();
+        }
         render();
       }
     };
@@ -54,8 +65,13 @@
   const nomExecuteName = document.getElementById('nom-execute-name');
   const nomExecuteBtn = document.getElementById('nom-execute-btn');
   const nomLogList    = document.getElementById('nom-log-list');
+  const langSelect    = document.getElementById('lang-select');
 
   undoBtn.addEventListener('click', () => send({ type: 'UNDO' }));
+
+  langSelect.addEventListener('change', () => {
+    send({ type: 'SET_LANGUAGE', language: langSelect.value });
+  });
 
   titleInput.addEventListener('change', () => {
     send({ type: 'SET_TITLE', title: titleInput.value });
@@ -109,15 +125,17 @@
   });
 
   nomExecuteBtn.addEventListener('click', () => {
-    const name = nomExecuteName.textContent.replace(' marked for execution', '') || 'this player';
-    if (confirm(`Execute ${name}?`)) send({ type: 'EXECUTE_MARKED' });
+    const name = markedSeatName || I18N.t('confirm.thisPlayer');
+    if (confirm(I18N.t('confirm.execute', { name }))) send({ type: 'EXECUTE_MARKED' });
   });
 
   // ── Player list render ─────────────────────────────────────
   const playerList = document.getElementById('player-list');
 
   function stateLabel(s) {
-    return s === 'alive' ? 'ALV' : s === 'dead_vote' ? 'D+V' : 'DED';
+    if (s === 'alive') return I18N.t('state.aliveShort');
+    if (s === 'dead_vote') return I18N.t('state.deadVoteShort');
+    return I18N.t('state.deadNoVoteShort');
   }
 
   function nextState(s) {
@@ -150,7 +168,7 @@
           </div>
           <label class="show-votes-toggle">
             <input type="checkbox" class="show-votes-cb">
-            Show on TV
+            <span class="show-votes-label">Show on TV</span>
           </label>
           <button class="execute-btn">Execute</button>
         </div>`;
@@ -203,8 +221,8 @@
       });
 
       executeBtn.addEventListener('click', () => {
-        const name = el.querySelector('.seat-name-input').value.trim() || 'this player';
-        if (confirm(`Execute ${name}?`)) send({ type: 'EXECUTE_PLAYER' });
+        const name = el.querySelector('.seat-name-input').value.trim() || I18N.t('confirm.thisPlayer');
+        if (confirm(I18N.t('confirm.execute', { name }))) send({ type: 'EXECUTE_PLAYER' });
       });
 
       playerList.appendChild(el);
@@ -215,6 +233,7 @@
     el.dataset.state = seat.state;
 
     const nameInput = el.querySelector('.seat-name-input');
+    nameInput.placeholder = I18N.t('input.seatPlaceholder');
     if (document.activeElement !== nameInput) {
       nameInput.value = seat.name;
       nameInput.classList.toggle('empty', !seat.name);
@@ -226,16 +245,21 @@
     stateBtn.disabled = isEmpty;
 
     const blockBtn = el.querySelector('.block-btn');
+    blockBtn.title = I18N.t('button.putOnBlock');
     blockBtn.classList.toggle('active', seat.onBlock);
     blockBtn.disabled = isEmpty;
 
-    el.querySelector('.clear-btn').style.visibility = seat.name ? 'visible' : 'hidden';
+    const clearBtn = el.querySelector('.clear-btn');
+    clearBtn.title = I18N.t('button.clearSeat');
+    clearBtn.style.visibility = seat.name ? 'visible' : 'hidden';
 
     const panel = el.querySelector('.block-panel');
     panel.classList.toggle('visible', seat.onBlock);
 
     el.querySelector('.vote-count').textContent = seat.blockVotes || 0;
     el.querySelector('.show-votes-cb').checked = gs.showVotesOnTV;
+    el.querySelector('.show-votes-label').textContent = I18N.t('block.showOnTV');
+    el.querySelector('.execute-btn').textContent = I18N.t('button.execute');
 
     // Nomination indicator dot
     const indicator = el.querySelector('.nom-indicator');
@@ -251,7 +275,7 @@
 
     // Populate nominator select (alive, named, not yet nominated)
     const prevNominatorVal = nomNominator.value;
-    nomNominator.innerHTML = '<option value="">Nominator…</option>';
+    nomNominator.innerHTML = `<option value="">${I18N.t('nomination.nominator')}</option>`;
     gs.seats.forEach((seat, i) => {
       if (seat.name && seat.state === 'alive' && !seat.hasNominated) {
         const opt = document.createElement('option');
@@ -264,7 +288,7 @@
 
     // Populate nominee select (named, not yet nominated)
     const prevNomineeVal = nomNominee.value;
-    nomNominee.innerHTML = '<option value="">Nominee…</option>';
+    nomNominee.innerHTML = `<option value="">${I18N.t('nomination.nominee')}</option>`;
     gs.seats.forEach((seat, i) => {
       if (seat.name && !seat.hasBeenNominated) {
         const opt = document.createElement('option');
@@ -283,8 +307,26 @@
     const markedSeat = gs.seats.find(s => s.markedForExecution && s.name);
     nomExecuteRow.classList.toggle('hidden', !markedSeat);
     if (markedSeat) {
-      nomExecuteName.textContent = `${markedSeat.name} marked for execution`;
+      markedSeatName = markedSeat.name;
+      nomExecuteName.textContent = I18N.t('nomination.marked', { name: markedSeat.name });
+    } else {
+      markedSeatName = '';
     }
+  }
+
+  function renderLanguageSelect() {
+    if (!languages.length) return;
+    langSelect.setAttribute('aria-label', I18N.t('label.language'));
+    if (langSelect.options.length !== languages.length) {
+      langSelect.innerHTML = '';
+      languages.forEach(lang => {
+        const opt = document.createElement('option');
+        opt.value = lang.code;
+        opt.textContent = lang.label;
+        langSelect.appendChild(opt);
+      });
+    }
+    langSelect.value = state.language;
   }
 
   function render() {
@@ -292,8 +334,9 @@
     const gs = state;
 
     // Header
-    phaseIndicator.textContent = `${gs.phase === 'day' ? 'Day' : 'Night'} ${gs.dayNumber}`;
+    phaseIndicator.textContent = I18N.t(gs.phase === 'day' ? 'phase.day' : 'phase.night', { n: gs.dayNumber });
     phaseIndicator.className = gs.phase;
+    renderLanguageSelect();
 
     // Undo button: enable if we have a previous state (server tracks it; we show enabled after any action)
     // We approximate: always enabled unless told otherwise
@@ -306,10 +349,10 @@
 
     // Phase button
     if (gs.phase === 'day') {
-      phaseBtn.textContent = 'Begin Night';
+      phaseBtn.textContent = I18N.t('button.beginNight');
       phaseBtn.className = 'to-night';
     } else {
-      phaseBtn.textContent = 'Begin Day';
+      phaseBtn.textContent = I18N.t('button.beginDay');
       phaseBtn.className = 'to-day';
     }
 
@@ -319,7 +362,7 @@
     // Majority
     const alive = gs.seats.filter(s => s.name && s.state === 'alive').length;
     const needed = alive > 0 ? Math.ceil(alive / 2) : 0;
-    majorityInfo.textContent = `${alive} alive · ${needed} to execute`;
+    majorityInfo.textContent = I18N.t('header.majority', { alive, needed });
 
     // Nomination bar
     renderNominationBar(gs);

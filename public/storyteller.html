@@ -16,18 +16,18 @@
     <div id="header-left">
       <span id="phase-indicator"></span>
     </div>
-    <button id="undo-btn" disabled title="Undo last action">↩ Undo</button>
+    <button id="undo-btn" disabled title="Undo last action" data-i18n="button.undo" data-i18n-title="button.undoTitle">↩ Undo</button>
   </header>
 
   <!-- Controls bar -->
   <div id="controls-bar">
-    <input id="title-input" type="text" maxlength="60" placeholder="Session title…" autocomplete="off" spellcheck="false">
+    <input id="title-input" type="text" maxlength="60" placeholder="Session title…" data-i18n-placeholder="input.title" autocomplete="off" spellcheck="false">
     <button id="phase-btn"></button>
   </div>
 
   <!-- Seat count -->
   <div id="seat-count-bar">
-    <span class="sc-label">Players</span>
+    <span class="sc-label" data-i18n="label.players">Players</span>
     <button id="sc-dec" class="sc-btn">◀</button>
     <span id="sc-value">10</span>
     <button id="sc-inc" class="sc-btn">▶</button>
@@ -38,18 +38,18 @@
   <div id="nomination-bar">
     <div id="nom-controls">
       <select id="nom-nominator"><option value="">Nominator…</option></select>
-      <span class="nom-label">nominates</span>
+      <span class="nom-label" data-i18n="nomination.nominates">nominates</span>
       <select id="nom-nominee"><option value="">Nominee…</option></select>
-      <button id="nom-submit-btn">Nominate</button>
+      <button id="nom-submit-btn" data-i18n="nomination.submit">Nominate</button>
     </div>
     <div id="nom-vote-row" class="hidden">
-      <label class="nom-vote-label">Votes: <input id="nom-votes-input" type="number" min="0" max="20" value="0"></label>
-      <button id="nom-votes-btn">Submit Votes</button>
-      <button id="nom-cancel-btn">Cancel</button>
+      <label class="nom-vote-label"><span data-i18n="nomination.votesLabel">Votes:</span> <input id="nom-votes-input" type="number" min="0" max="20" value="0"></label>
+      <button id="nom-votes-btn" data-i18n="nomination.submitVotes">Submit Votes</button>
+      <button id="nom-cancel-btn" data-i18n="button.cancel">Cancel</button>
     </div>
     <div id="nom-execute-row" class="hidden">
       <span id="nom-execute-name"></span>
-      <button id="nom-execute-btn">⚰ Execute Marked</button>
+      <button id="nom-execute-btn" data-i18n="nomination.executeMarked">⚰ Execute Marked</button>
     </div>
   </div>
 
@@ -59,29 +59,33 @@
   <!-- Footer -->
   <div id="footer">
     <details id="nom-log-details">
-      <summary>Nomination Log</summary>
+      <summary data-i18n="log.nominationLog">Nomination Log</summary>
       <ul id="nom-log-list"></ul>
     </details>
     <details id="log-details">
-      <summary>Game Log</summary>
+      <summary data-i18n="log.gameLog">Game Log</summary>
       <ul id="log-list"></ul>
     </details>
-    <button id="reset-btn">Reset Game</button>
+    <div id="footer-actions">
+      <select id="lang-select" aria-label="Language"></select>
+      <button id="reset-btn" data-i18n="button.reset">Reset Game</button>
+    </div>
   </div>
 
   <!-- Reset modal -->
   <div id="reset-modal" class="hidden">
     <div id="reset-modal-card">
-      <p id="reset-modal-text">Would you like to keep the existing players?</p>
+      <p id="reset-modal-text" data-i18n="reset.keepQuestion">Would you like to keep the existing players?</p>
       <div id="reset-modal-buttons">
-        <button id="reset-keep-btn">Keep Players</button>
-        <button id="reset-full-btn">Full Reset</button>
+        <button id="reset-keep-btn" data-i18n="reset.keep">Keep Players</button>
+        <button id="reset-full-btn" data-i18n="reset.full">Full Reset</button>
       </div>
     </div>
   </div>
 
   <!-- Sortable from CDN — needed for drag-to-reorder -->
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+  <script src="i18n.js"></script>
   <script src="storyteller.js"></script>
 </body>
 </html>
